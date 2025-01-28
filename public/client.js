@@ -71,6 +71,20 @@ socket.on("playersList", (players) => {
         }
 
         playersList.appendChild(li);
+
+        // Mise à jour de la liste des scores
+const scoreList = document.getElementById("scoreList");
+scoreList.innerHTML = ""; // Efface la liste
+
+players.forEach(player => {
+    const li = document.createElement("li");
+    li.textContent = `${player.name}: ${player.score} pts`;
+    scoreList.appendChild(li);
+});
+
+
+
+        
     });
 });
 
