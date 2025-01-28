@@ -2,7 +2,7 @@
 const socket = io(
     window.location.hostname === "localhost"
         ? "http://localhost:3000"
-        : "https://jdmec-v1.onrender.com"
+        : "https://jdmec-v3.onrender.com"
 );
 
 // ✅ Récupération des éléments HTML
