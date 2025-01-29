@@ -126,3 +126,80 @@ socket.on("randomPlayerChosen", (data) => {
         }
     }, 1000);
 });
+
+
+// ✅ Élément de la roue
+const wheelContainer = document.getElementById("wheel-container");
+const wheelCanvas = document.getElementById("wheelCanvas");
+
+// ✅ Masquer la roue au début
+wheelContainer.style.display = "none";
+
+// ✅ Fonction pour dessiner la roue avec les pseudos
+function drawWheel(players) {
+    const ctx = wheelCanvas.getContext("2d");
+    const size = wheelCanvas.width / 2;
+    const totalPlayers = players.length;
+    const anglePerPlayer = (2 * Math.PI) / totalPlayers;
+
+    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+    players.forEach((player, index) => {
+        const startAngle = index * anglePerPlayer;
+        const endAngle = (index + 1) * anglePerPlayer;
+        
+        ctx.beginPath();
+        ctx.moveTo(size, size);
+        ctx.arc(size, size, size, startAngle, endAngle);
+        ctx.fillStyle = `hsl(${(index * 360) / totalPlayers}, 80%, 60%)`;
+        ctx.fill();
+        ctx.stroke();
+
+        // Ajouter le pseudo
+        const textAngle = startAngle + anglePerPlayer / 2;
+        const textX = size + Math.cos(textAngle) * (size / 1.5);
+        const textY = size + Math.sin(textAngle) * (size / 1.5);
+        
+        ctx.fillStyle = "#000";
+        ctx.font = "16px Arial";
+        ctx.fillText(player, textX - 10, textY);
+    });
+}
+
+// ✅ Afficher la roue et la faire tourner avant de choisir un joueur
+socket.on("startWheel", (players) => {
+    console.log("🎡 Démarrage de la roue avec :", players);
+
+    wheelContainer.style.display = "block";
+    drawWheel(players);
+
+    let rotation = 0;
+    const duration = 3000; // Temps de rotation
+    const startTime = Date.now();
+
+    function animateWheel() {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < duration) {
+            rotation += 20; // Rotation progressive
+            wheelCanvas.style.transform = `rotate(${rotation}deg)`;
+            requestAnimationFrame(animateWheel);
+        } else {
+            // Sélectionner aléatoirement un joueur après la rotation
+            const chosenPlayer = players[Math.floor(Math.random() * players.length)];
+            console.log("🎯 Joueur sélectionné :", chosenPlayer);
+
+            // Masquer la roue et annoncer le joueur sélectionné
+            setTimeout(() => {
+                wheelContainer.style.display = "none";
+                socket.emit("playerChosen", chosenPlayer);
+            }, 1000);
+        }
+    }
+
+    animateWheel();
+});
+
+// ✅ Afficher le résultat de la roue
+socket.on("wheelResult", (chosenPlayer) => {
+    chosenAnnouncement.textContent = `🎉 ${chosenPlayer} a été sélectionné !`;
+});
