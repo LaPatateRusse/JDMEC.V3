@@ -176,3 +176,19 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Serveur lancé sur le port ${PORT}`);
 });
+
+
+
+
+// ✅ Quand tous les joueurs ont soumis un mot
+if (allPlayersHaveSubmitted()) {
+    const playerNames = Object.values(players).map(player => player.name);
+    
+    // Annonce du lancement de la roue
+    io.emit("startWheel", playerNames);
+
+    // Attendre que la roue tourne et récupère le résultat
+    socket.on("playerChosen", (chosenPlayer) => {
+        io.emit("wheelResult", chosenPlayer);
+    });
+}
